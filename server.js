@@ -1,60 +1,102 @@
 const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
+const connectDB = require("./src/services/database");
+const router = require("./src/routes/index");
+const logger = require("./src/services/logger");
+const pulse = require('./src/utils/heartbeat');
+const configureMiddleware = require('./src/utils/server/configure-express-middleware');
 
-const app = express();
+(async function main() {
+  try {
+    logger.info('Starting API service');
+    const app = express();
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+    // Connecting to the database
+    await connectDB();
 
-app.use(express.json());
+     // Registering routes
+     app.use("/api", router());
+     
+    // Applying middleware
+    app.use(configureMiddleware());
 
-let users = [
-  {
-    address: "0x94C1Da4F14178AB9c2eB2f8C8351b0B6f383CF72",
-  },
-];
+   
 
-app.get("/", (req, res) => {
-  res.send("hello world");
-});
+    // Start the server
+    app.listen(3000, () => {
+      console.log("Server is running on port 3000");
+    });
 
-app.get("/api/checkUser/address=:address", (req, res) => {
-  const address = req.params.address;
-  const userExists = users.some((user) => user.address === address);
-  if (userExists) {
-    res.json({ message: "user exists" });
-  } else {
-    res.json({ message: "user does not exist" });
+    logger.info('Service API - Online.');
+
+    setInterval(() => {
+      pulse();
+    }, 30000);
+
+  } catch (ex) {
+    logger.error(`[critical error] ${ex}`);
   }
-});
+})();
 
-app.post("/api/register", (req, res) => {
-  const { address, refid } = req.query;
-  const alreadyExists = users.some((user) => user.address === address);
-  if (alreadyExists) {
-    res.json({ message: "user already exists" });
-  }
 
-  if (!address || !refid) {
-    res.json({ message: "please provide address and refid" });
-  } else {
-    users.push({ address, refid });
-    res.json({ message: "user registered" });
-  }
-});
+// app.get("/", (req, res) => {
+//   res.send("hello world");
+// });
 
-app.post("/api/login", (req, res) => {
-  const { address } = req.query;
-  const userExists = users.some((user) => user.address === address);
-  if (userExists) {
-    res.json({ message: "already a user" });
-  } else {
-    res.json({ message: "user does not exist" });
-  }
-});
+// app.get("/api/checkUser/address=:address", (req, res) => {
+//   const address = req.params.address;
+//   const userExists = User.findOne({ address });
+//   if (userExists) {
+//     res.json({ message: "user exists" });
+//   } else {
+//     res.json({ message: "user does not exist" });
+//   }
+// });
 
-app.listen(3001, () => {
-  console.log("server started ");
-});
+// app.post("/api/register", async (req, res) => {
+//   const { address, refid } = req.query;
+
+//   if (!address || !refid) {
+//     return res.status(400).json({ error: "Please provide address and refid" });
+//   }
+
+//   try {
+//     const alreadyExists = await User.findOne({ address, refid });
+
+//     if (alreadyExists) {
+//       return res.status(400).json({ error: "User already exists" });
+//     }
+
+//     const newUser = new User({ address, refid });
+//     await newUser.save();
+
+//     return res.json({ message: "User registered successfully", user: newUser });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+// app.post("/api/login", async (req, res) => {
+//     const { address } = req.query;
+
+//     if (!address) {
+//       return res.status(400).json({ error: "Please provide an address" });
+//     }
+
+//     try {
+//       const user = await User.findOne({ address });
+
+//       if (user) {
+//         return res.json({ message: "Login Successfully", user });
+//       } else {
+//         return res.status(404).json({ error: "User does not exist" });
+//       }
+//     } catch (error) {
+//       console.error(error);
+//       return res.status(500).json({ error: "Internal server error" });
+//     }
+//   });
+
+// app.listen(3001, () => {
+//   console.log("server started ");
+// });
