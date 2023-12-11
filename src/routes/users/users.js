@@ -27,7 +27,9 @@ usersRouter.post("/register", async (req, res) => {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    const newUser = new User({ address, refid });
+    const virtualMoney = "50 $" 
+    const newUser = new User({ address, refid, virtualMoney });
+    
     await newUser.save();
 
     return res.json({ message: "User registered successfully", user: newUser });

@@ -6,7 +6,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unquie: true,
-    }, 
+    },
+    virtualMoney: {
+      type:String,
+      require:true,
+    },
+    refid:{
+      type:String,
+      require:true,
+      unique:true,
+    }
   },
   { timestamps: true }
 );
