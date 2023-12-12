@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema(
       type:String,
       require:true,
       unique:true,
+    },
+    transactionhash:{
+      type:String,
+      require:true,
+      unique:true,
     }
   },
   { timestamps: true }

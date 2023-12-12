@@ -5,16 +5,24 @@ const usersRouter = express.Router();
 
 usersRouter.get("/checkuser", async (req, res) => {
   const address = req.query.address;
-  const userExists = User.findOne({ address });
-  if (userExists) {
-    res.json({ message: "user exists" });
-  } else {
-    res.json({ message: "user does not exist" });
+
+  try {
+    const userExists = await User.findOne({ address });
+
+    if (userExists) {
+      res.json({ message: "user exists" });
+    } else {
+      res.json({ message: "user does not exist" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
+
 usersRouter.post("/register", async (req, res) => {
-  const { address, refid } = req.query;
+  const { address, refid, transactionhash } = req.body;
 
   if (!address || !refid) {
     return res.status(400).json({ error: "Please provide address and refid" });
@@ -28,11 +36,11 @@ usersRouter.post("/register", async (req, res) => {
     }
 
     const virtualMoney = "50 $" 
-    const newUser = new User({ address, refid, virtualMoney });
+    const newUser = new User({ address, refid, virtualMoney, transactionhash });
     
     await newUser.save();
 
-    return res.json({ message: "User registered successfully", user: newUser });
+    return res.json({ message: "User registered successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -40,7 +48,7 @@ usersRouter.post("/register", async (req, res) => {
 });
 
 usersRouter.post("/login", async (req, res) => {
-  const { address } = req.query;
+  const { address } = req.body;
 
   if (!address) {
     return res.status(400).json({ error: "Please provide an address" });
@@ -50,7 +58,7 @@ usersRouter.post("/login", async (req, res) => {
     const user = await User.findOne({ address });
 
     if (user) {
-      return res.json({ message: "Login Successfully", user });
+      return res.json({ message: "Login Successfully" });
     } else {
       return res.status(404).json({ error: "User does not exist" });
     }
