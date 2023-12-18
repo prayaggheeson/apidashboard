@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
       unquie: true,
     },
     virtualMoney: {
-      type:String,
+      type:Number,
       require:true,
     },
     refid:{
@@ -26,5 +26,6 @@ const userSchema = new mongoose.Schema(
 );
 
 const User = mongoose.model("User", userSchema);
+
 
 module.exports = User;

@@ -4,6 +4,8 @@ const logger = require("../../services/logger");
 
 const configure = (app) => {
 try{
+    require('dotenv').config();
+
     app.use(bodyParser.urlencoded({
         extended: true,
     }))
